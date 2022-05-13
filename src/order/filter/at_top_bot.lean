@@ -1280,7 +1280,10 @@ tendsto_at_bot_of_monotone_of_filter h (tendsto_map' H)
 condition for comparison of the filter `at_top.map (λ s, ∏ b in s, f b)` with
 `at_top.map (λ s, ∏ b in s, g b)`. This is useful to compare the set of limit points of
 `Π b in s, f b` as `s → at_top` with the similar set for `g`. -/
-@[to_additive]
+@[to_additive "Let `f` and `g` be two maps to the same commutative additive monoid. This lemma gives
+a sufficient condition for comparison of the filter `at_top.map (λ s, ∑ b in s, f b)` with
+`at_top.map (λ s, ∑ b in s, g b)`. This is useful to compare the set of limit points of
+`∑ b in s, f b` as `s → at_top` with the similar set for `g`."]
 lemma map_at_top_finset_prod_le_of_prod_eq [comm_monoid α] {f : β → α} {g : γ → α}
   (h_eq : ∀u:finset γ, ∃v:finset β, ∀v', v ⊆ v' → ∃u', u ⊆ u' ∧ ∏ x in u', g x = ∏ b in v', f b) :
   at_top.map (λs:finset β, ∏ b in s, f b) ≤ at_top.map (λs:finset γ, ∏ x in s, g x) :=
@@ -1313,7 +1316,8 @@ lemma has_antitone_basis.comp_strict_mono {l : filter α} {s : ℕ → set α}
 hs.comp_mono hφ.monotone hφ.tendsto_at_top
 
 /-- Given an antitone basis `s : ℕ → set α` of a filter, extract an antitone subbasis `s ∘ φ`,
-`φ : ℕ → ℕ`, such that `m < n` implies `r (φ m) (φ n)`. -/
+`φ : ℕ → ℕ`, such that `m < n` implies `r (φ m) (φ n)`. This lemma can be used to extract an
+antitone basis with basis sets decreasing "sufficiently fast". -/
 lemma has_antitone_basis.subbasis_with_rel {f : filter α} {s : ℕ → set α}
   (hs : f.has_antitone_basis s) {r : ℕ → ℕ → Prop} (hr : ∀ m, ∀ᶠ n in at_top, r m n) :
   ∃ φ : ℕ → ℕ, strict_mono φ ∧ (∀ ⦃m n⦄, m < n → r (φ m) (φ n)) ∧ f.has_antitone_basis (s ∘ φ) :=
