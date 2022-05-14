@@ -117,7 +117,7 @@ protected lemma uniform_space.metrizable_uniformity (X : Type*) [uniform_space X
 begin
   classical,
   obtain ⟨U, hU_symm, hU_comp, hB⟩ : ∃ U : ℕ → set (X × X), (∀ n, symmetric_rel (U n)) ∧
-    (∀ ⦃m n⦄, m < n → (U n ○ U n) ○ (U n ○ U n) ⊆ U m) ∧ (𝓤 X).has_antitone_basis U,
+    (∀ ⦃m n⦄, m < n → U n ○ (U n ○ U n) ⊆ U m) ∧ (𝓤 X).has_antitone_basis U,
   { rcases uniform_space.has_seq_basis X with ⟨V, hB, hV_symm⟩,
     rcases hB.subbasis_with_rel (λ m, hB.tendsto_small_sets.eventually
       (eventually_uniformity_iterate_comp_subset (hB.mem m) 2)) with ⟨φ, hφ_mono, hφ_comp, hφB⟩,
@@ -154,7 +154,7 @@ begin
       simp only [le_max_iff, hle_d, ← not_and_distrib],
       rintro ⟨h₁₂, h₂₃, h₃₄⟩,
       refine nat.find_spec H (hU_comp (lt_add_one $ nat.find H) _),
-      exact ⟨x₂, ⟨x₁, refl_mem_uniformity (hB.mem _), h₁₂⟩, ⟨x₃, h₂₃, h₃₄⟩⟩ },
+      exact ⟨x₂, h₁₂, x₃, h₂₃, h₃₄⟩ },
     { exact (dif_neg H).trans_le (zero_le _) } },
   refine ⟨infer_instance, uniform_space_eq $
     (uniformity_basis_dist_pow hr.1 hr.2).ext hB.to_has_basis _ _⟩,
