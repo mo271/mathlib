@@ -19,7 +19,7 @@ space structure.
 -/
 
 open set filter metric
-open_locale bounded_continuous_function filter topological_space uniformity
+open_locale bounded_continuous_function filter topological_space
 
 namespace topological_space
 
