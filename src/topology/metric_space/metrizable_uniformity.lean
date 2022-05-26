@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2022 Yury Kudryashov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yury Kudryashov
+-/
 import topology.metric_space.basic
 
 /-!
@@ -18,12 +23,11 @@ noncomputable def of_prenndist (d : X → X → ℝ≥0) (dist_self : ∀ x, d x
     (cinfi_le (order_bot.bdd_below _) []).trans_eq $ by simp [dist_self],
   dist_comm := λ x y, nnreal.coe_eq.2 $
     begin
-      rw [← reverse_surjective.infi_comp],
-      refine congr_arg infi (funext $ λ l, _),
+      refine reverse_surjective.infi_congr _ (λ l, _),
       rw [← sum_reverse, zip_with_distrib_reverse, reverse_append, reverse_reverse,
         reverse_singleton, singleton_append, reverse_cons, reverse_reverse,
         zip_with_comm _ dist_comm],
-      simp
+      simp only [length, length_append]
     end,
   dist_triangle := λ x y z,
     begin
@@ -44,10 +48,15 @@ lemma dist_of_prenndist_le (d : X → X → ℝ≥0) (dist_self : ∀ x, d x x =
     (pseudo_metric_space.of_prenndist d dist_self dist_comm)) x y ≤ d x y :=
 nnreal.coe_le_coe.2 $ (cinfi_le (order_bot.bdd_below _) []).trans_eq $ by simp
 
+/-- Consider a function `d : X → X → ℝ≥0` such that `d x x = 0` and `d x y = d y x` for all `x`,
+`y`. Let `dist` be the largest pseudometric distance such that `dist x y ≤ d x y`, see
+`pseudo_metric_space.of_prenndist`. Suppose that `d` satisfies the following triangle-like
+inequality: `d x₁ x₄ ≤ 2 * max (d x₁ x₂, d x₂ x₃, d x₃ x₄)`. Then `d x y ≤ 2 * dist x y` for all
+`x`, `y`. -/
 lemma le_two_mul_dist_of_prenndist (d : X → X → ℝ≥0) (dist_self : ∀ x, d x x = 0)
-  (dist_comm : ∀ x y, d x y = d y x)
-  (hd : ∀ x₁ x₂ x₃ x₄, d x₁ x₄ ≤ 2 * max (d x₁ x₂) (max (d x₂ x₃) (d x₃ x₄))) (x y : X) :
-  ↑(d x y) ≤ 2 * @dist X (@pseudo_metric_space.to_has_dist X
+  (dist_comm : ∀ x y, d x y = d y x) {C : ℝ≥0}
+  (hd : ∀ x₁ x₂ x₃ x₄, d x₁ x₄ ≤ C * max (d x₁ x₂) (max (d x₂ x₃) (d x₃ x₄))) (x y : X) :
+  ↑(d x y) ≤ ↑C * @dist X (@pseudo_metric_space.to_has_dist X
     (pseudo_metric_space.of_prenndist d dist_self dist_comm)) x y :=
 begin
   erw [← div_le_iff' (@two_pos ℝ _ _), ← nnreal.coe_two, ← nnreal.coe_div, nnreal.coe_le_coe],
@@ -136,7 +145,7 @@ begin
     simp only [@symmetric_rel.mk_mem_comm _ _ (hU_symm _) x y] },
   have hr : (1 / 2 : ℝ≥0) ∈ Ioo (0 : ℝ≥0) 1,
     from ⟨nnreal.half_pos one_pos, nnreal.half_lt_self one_ne_zero⟩,
-  letI := pseudo_metric_space.of_prenndist d (λ x, hd₀.2 (setoid.refl _)) hd_symm, 
+  letI I := pseudo_metric_space.of_prenndist d (λ x, hd₀.2 (setoid.refl _)) hd_symm, 
   have hdist_le : ∀ x y, dist x y ≤ d x y,
     from pseudo_metric_space.dist_of_prenndist_le _ _ _,
   have hle_d : ∀ {x y : X} {n : ℕ}, (1 / 2) ^ n ≤ d x y ↔ (x, y) ∉ U n,
@@ -156,8 +165,7 @@ begin
       refine nat.find_spec H (hU_comp (lt_add_one $ nat.find H) _),
       exact ⟨x₂, h₁₂, x₃, h₂₃, h₃₄⟩ },
     { exact (dif_neg H).trans_le (zero_le _) } },
-  refine ⟨infer_instance, uniform_space_eq $
-    (uniformity_basis_dist_pow hr.1 hr.2).ext hB.to_has_basis _ _⟩,
+  refine ⟨I, uniform_space_eq $ (uniformity_basis_dist_pow hr.1 hr.2).ext hB.to_has_basis _ _⟩,
   { refine λ n hn, ⟨n, hn, λ x hx, (hdist_le _ _).trans_lt _⟩,
     rwa [← nnreal.coe_pow, nnreal.coe_lt_coe, ← not_le, hle_d, not_not, prod.mk.eta] },
   { refine λ n hn, ⟨n + 1, trivial, λ x hx, _⟩,
@@ -175,5 +183,5 @@ protected noncomputable def uniform_space.pseudo_metric_space (X : Type*) [unifo
   congr_arg _ (uniform_space.metrizable_uniformity X).some_spec.symm
 
 protected noncomputable def uniform_space.metric_space (X : Type*) [uniform_space X]
-  [is_countably_generated (𝓤 X)] [separated_space X] : metric_space X :=
-@of_t2_pseudo_metric_space X (uniform_space.pseudo_metric_space X) ‹_›
+  [is_countably_generated (𝓤 X)] [t0_space X] : metric_space X :=
+@of_t0_pseudo_metric_space X (uniform_space.pseudo_metric_space X) _
