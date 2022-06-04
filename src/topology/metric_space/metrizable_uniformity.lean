@@ -138,6 +138,8 @@ end
 
 end pseudo_metric_space
 
+/-- If `X` is a uniform space with countably generated uniformity filter, there exists a
+`pseudo_metric_space` structure compatible with the `uniform_space` structure.  -/
 protected lemma uniform_space.metrizable_uniformity (X : Type*) [uniform_space X]
   [is_countably_generated (𝓤 X)] :
   ∃ I : pseudo_metric_space X, I.to_uniform_space = ‹_› :=
@@ -203,11 +205,22 @@ begin
       hle_d, prod.mk.eta] }
 end
 
+/-- A `pseudo_metric_space` instance compatible with a given `uniform_space` structure. -/
 protected noncomputable def uniform_space.pseudo_metric_space (X : Type*) [uniform_space X]
   [is_countably_generated (𝓤 X)] : pseudo_metric_space X :=
 (uniform_space.metrizable_uniformity X).some.replace_uniformity $
   congr_arg _ (uniform_space.metrizable_uniformity X).some_spec.symm
 
+/-- A `metric_space` instance compatible with a given `uniform_space` structure. -/
 protected noncomputable def uniform_space.metric_space (X : Type*) [uniform_space X]
   [is_countably_generated (𝓤 X)] [t0_space X] : metric_space X :=
 @of_t0_pseudo_metric_space X (uniform_space.pseudo_metric_space X) _
+
+@[priority 100]
+instance uniform_space.pseudo_metrizable_space [uniform_space X] [is_countably_generated (𝓤 X)] :
+  topological_space.pseudo_metrizable_space X :=
+by { letI := uniform_space.pseudo_metric_space X, apply_instance }
+
+lemma uniform_space.metrizable_space [uniform_space X] [is_countably_generated (𝓤 X)] [t0_space X] :
+  topological_space.metrizable_space X :=
+by { letI := uniform_space.metric_space X, apply_instance }
